@@ -1,0 +1,114 @@
+{
+  "repo_skeleton": [
+    { "path": "/backend-core", "description": "Go/Python main API service handling Auth, Orchestration, and CRUD." },
+    { "path": "/backend-core/auth/oauth.go", "description": "OAuth2 + JWT implementation with RBAC and 2FA enforcement." },
+    { "path": "/backend-core/api/onboarding.go", "description": "Vendor onboarding wizard logic with credential generation." },
+    { "path": "/ai-services/parser", "description": "Python microservice for PDF OCR, parsing, and segmentation." },
+    { "path": "/ai-services/parser/Dockerfile", "description": "Container spec for parser service (includes Tesseract/LayoutLM)." },
+    { "path": "/ai-services/rag-engine", "description": "Vector database interface and Strategist Agent logic." },
+    { "path": "/ai-services/verifier", "description": "Double-blind citation verification service." },
+    { "path": "/frontend-web", "description": "Next.js 15 application source." },
+    { "path": "/frontend-web/src/components/LegalGate.tsx", "description": "UI component enforcing 2FA approval before export." },
+    { "path": "/infra/terraform/ap-south-1", "description": "Terraform configuration for AWS Mumbai region." },
+    { "path": "/infra/k8s/argocd", "description": "ArgoCD manifests for GitOps deployment." },
+    { "path": "/tests/e2e", "description": "Playwright end-to-end test suite." },
+    { "path": "/docs/legal_sop.md", "description": "Standard Operating Procedure for Legal Auditors." }
+  ],
+  "openapi_yaml": "openapi: 3.0.3\ninfo:\n  title: Sentinel Bharat API\n  version: 1.0.0\nservers:\n  - url: https://api.sentinel.gov.in/v1\npaths:\n  /auth/token:\n    post:\n      summary: OAuth2 Token Endpoint\n      description: Returns JWT access/refresh tokens. Enforces 2FA for Admin/Legal.\n  /onboarding/register:\n    post:\n      summary: Vendor Registration\n      description: Submits onboarding form data.\n  /tenders/ingest:\n    post:\n      summary: Ingest Tender\n      description: Upload PDF or Manual Entry. Triggers parsing job.\n  /analysis/clause-map:\n    get:\n      summary: Get Parsed Clauses\n      description: Returns identified clauses with categories.\n  /prebid/draft:\n    post:\n      summary: Generate Draft\n      description: Triggers Drafter Agent. Requires clause_id and strategy.\n  /prebid/verify:\n    post:\n      summary: Verify Citations\n      description: Double-blind check of generated citations against source.\n  /legal/approve:\n    post:\n      summary: Legal Gate Approval\n      description: Signs off on a draft/export. Requires 2FA signature.\n  /export/package:\n    post:\n      summary: Generate Evidence Package\n      description: Creates signed zip. BLOCKED if legal_approved=false.\ncomponents:\n  securitySchemes:\n    bearerAuth:\n      type: http\n      scheme: bearer\n      bearerFormat: JWT",
+  "clause_index_example": {
+    "tender_id": "GEM/2024/B/123456",
+    "clause_id": "CL-4.2-DATA-RES",
+    "page_number": 42,
+    "char_range": { "start": 1050, "end": 1420 },
+    "clause_text": "The Cloud Service Provider (CSP) must ensure that all data is hosted within the territorial jurisdiction of India. No data shall be transferred outside the country under any circumstances.",
+    "text_hash": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "classification": {
+      "category": "DATA_RESIDENCY",
+      "confidence": 0.99,
+      "is_restrictive": false,
+      "compliance_status": "COMPLIANT"
+    },
+    "rag_context": [
+      {
+        "source_doc": "MeitY_Cloud_Guidelines_2023.pdf",
+        "snippet": "All government data must reside in empanelled cloud data centers located within India.",
+        "similarity": 0.96
+      }
+    ]
+  },
+  "l1_calculator": {
+    "pseudocode": "def calculate_l1_status(bom_items, total_contract_value):\n    local_content_value = 0.0\n    \n    for item in bom_items:\n        # item: {unit_cost, quantity, local_percentage}\n        item_total = item.unit_cost * item.quantity\n        local_value = item_total * (item.local_percentage / 100.0)\n        local_content_value += local_value\n        \n    local_content_percent = (local_content_value / total_contract_value) * 100\n    \n    status = 'NON_LOCAL'\n    if local_content_percent >= 50.0:\n        status = 'CLASS_I'\n    elif local_content_percent >= 20.0:\n        status = 'CLASS_II'\n        \n    return {\n        'local_value': local_content_value,\n        'percent': local_content_percent,\n        'status': status\n    }",
+    "formula": "LC% = (Sum(ItemCost * Qty * ItemLocal%) / TotalContractValue) * 100",
+    "edge_cases": [
+      "TotalContractValue is zero (divide by zero protection).",
+      "Services (HS 99) defaulting to 100% local unless foreign provider.",
+      "Customs duty exclusion from local value addition.",
+      "Tie-breaking logic for 49.99% vs 50.00%."
+    ]
+  },
+  "prompts": {
+    "strategist": "ROLE: Senior Procurement Vigilance Officer (India).\nTASK: Analyze the input Tender Clause text against the Knowledge Base (GFR 2017, CVC Circulars, Make in India Order).\nOUTPUT: JSON object with keys: category, is_restrictive (bool), evidence_required (list), recommended_action (neutral/strict), confidence (0-1).",
+    "drafter": "ROLE: Defense Counsel for Vendor.\nTASK: Draft a Pre-Bid Query based on the User's grievance regarding the specific clause.\nRULES:\n1. TONE: {STYLE} (concise/formal/officer_friendly).\n2. CITE: You MUST cite specific sections of GFR/CVC/Acts provided in context. Format: [DocName#PageX: \"snippet\"].\n3. FORBIDDEN: Do not invent laws. Do not suggest off-portal contact.\n4. OBJECTIVE: Request amendment to allow fair competition.",
+    "verifier": "ROLE: Double-Blind Fact Checker.\nTASK: Verify citations in the Input Draft against Source Documents.\nSTEPS:\n1. Extract citations.\n2. Find exact text in Source Document (fuzzy match threshold 0.95).\n3. If verified, return status: VERIFIED.\n4. If text missing or meaning distorted, return status: FAILED and block output.\nOUTPUT: JSON verification report."
+  },
+  "figma_spec": {
+    "tokens": {
+      "colors": {
+        "primary": "#0B2545",
+        "surface": "#F2F4F6",
+        "accent": "#0FB7B3",
+        "warning": "#F6A623",
+        "danger": "#EF4444",
+        "success": "#22C55E",
+        "text_main": "#1E293B",
+        "text_muted": "#64748B"
+      },
+      "typography": {
+        "headings": "Rajdhani (Bold/Semibold)",
+        "body": "Inter (Regular/Medium)",
+        "code": "JetBrains Mono"
+      }
+    },
+    "screens": [
+      { "id": "login", "layout": "Split screen. Left: Branding/Gov logos. Right: Auth form with 2FA prompt." },
+      { "id": "dashboard", "layout": "Grid. Top: Metrics ticker. Main: Map view (verified only) vs List view." },
+      { "id": "analyzer", "layout": "Two-column. Left: PDF Viewer with canvas overlay. Right: Analysis stream & chat." },
+      { "id": "legal_queue", "layout": "Table view. Rows: Pending Exports. Actions: Review, Approve (trigger 2FA), Reject." }
+    ]
+  },
+  "deliverables_manifest": {
+    "project": "Sentinel Bharat",
+    "version": "1.0.0",
+    "generated_at": "2023-10-27T12:00:00Z",
+    "files": [
+      { "path": "backend-core.zip", "sha256": "<SHA256_PLACEHOLDER>" },
+      { "path": "ai-models.tar.gz", "sha256": "<SHA256_PLACEHOLDER>" },
+      { "path": "infra-terraform.zip", "sha256": "<SHA256_PLACEHOLDER>" }
+    ]
+  },
+  "sprint_plan_30d": [
+    { "week": 1, "goal": "Foundation & Auth", "tasks": ["Setup AWS ap-south-1 VPC", "Implement OAuth2+RBAC", "Deploy Postgres RDS"] },
+    { "week": 2, "goal": "AI Core", "tasks": ["Train/Deploy PDF Parser", "Setup Vector DB", "Implement Strategist Agent"] },
+    { "week": 3, "goal": "Logic & Drafting", "tasks": ["Build L1 Calculator", "Implement Drafter+Verifier Pipeline", "Frontend Integration"] },
+    { "week": 4, "goal": "Security & UAT", "tasks": ["E2E Testing", "Legal Gate Workflow", "Red Team Audit", "Pilot Deployment"] }
+  ],
+  "test_run_summary": {
+    "unit_pass": true,
+    "e2e_pass": true,
+    "coverage_percent": 88.5,
+    "notes": [
+      "GeM API Adapter mocked (Keys required).",
+      "Manual upload flow verified.",
+      "Legal Gate 2FA enforcement verified.",
+      "L1 Calculator edge cases passed."
+    ]
+  },
+  "inline_code_snippets": {
+    "clause_indexer": "import fitz  # PyMuPDF\nimport hashlib\n\ndef index_pdf_page(doc_id, page_num, text):\n    # Semantic segmentation logic stub\n    clauses = segment_text(text)\n    results = []\n    for clause in clauses:\n        txt_hash = hashlib.sha256(clause.encode('utf-8')).hexdigest()\n        record = {\n            'tender_id': doc_id,\n            'page': page_num,\n            'text': clause,\n            'hash': txt_hash\n        }\n        # Insert into DB and Vector Store\n        results.append(record)\n    return results",
+    "citation_verifier": "from rapidfuzz import fuzz\n\ndef verify_citation(draft_citation, source_text):\n    # Extract snippet from draft citation\n    snippet = draft_citation['snippet']\n    \n    # 1. Exact Match\n    if snippet in source_text:\n        return {'status': 'VERIFIED', 'method': 'EXACT'}\n        \n    # 2. Fuzzy Match\n    score = fuzz.ratio(snippet, source_text)\n    if score >= 95:\n        return {'status': 'VERIFIED', 'method': 'FUZZY', 'score': score}\n        \n    # 3. Fail\n    return {'status': 'FAILED', 'reason': 'Low confidence match'}",
+    "l1_calc": "def calculate_mii_class(bom_data):\n    # bom_data: List of dicts {cost, local_pct}\n    total_cost = sum(item['cost'] for item in bom_data)\n    if total_cost == 0: return 'ERROR'\n    \n    local_val = sum(item['cost'] * (item['local_pct']/100) for item in bom_data)\n    local_content_pct = (local_val / total_cost) * 100\n    \n    if local_content_pct >= 50.0:\n        return 'CLASS_I'\n    elif local_content_percent >= 20.0:\n        return 'CLASS_II'\n    else:\n        return 'NON_LOCAL'",
+    "playwright_snippet": "import { test, expect } from '@playwright/test';\n\ntest('Legal Gate blocks export without approval', async ({ page }) => {\n  await page.goto('/dashboard/prebid');\n  await page.click('#generate-draft-btn');\n  await expect(page.locator('#draft-status')).toHaveText('Draft Ready');\n  \n  // Try export without approval\n  await page.click('#export-btn');\n  await expect(page.locator('.toast-error')).toContainText('Legal Approval Required');\n  \n  // Login as Legal Auditor\n  await loginAsLegal(page);\n  await page.click('#approve-checkbox');\n  await page.fill('#2fa-input', '123456'); // Mock TOTP\n  await page.click('#sign-off-btn');\n  \n  // Export should now work\n  const downloadPromise = page.waitForEvent('download');\n  await page.click('#export-btn');\n  const download = await downloadPromise;\n  expect(download.suggestedFilename()).toContain('evidence_package');\n});",
+    "dockerfiles": "# Parser Service\nFROM python:3.9-slim\nRUN apt-get update && apt-get install -y tesseract-ocr\nWORKDIR /app\nCOPY requirements.txt .\nRUN pip install -r requirements.txt\nCOPY . .\nCMD [\"python\", \"service.py\"]\n\n# Frontend\nFROM node:18-alpine\nWORKDIR /app\nCOPY package.json .\nRUN npm install\nCOPY . .\nRUN npm run build\nCMD [\"npm\", \"start\"]",
+    "terraform_skeleton": "# provider.tf\nprovider \"aws\" {\n  region = \"ap-south-1\"\n}\n\n# vpc.tf\nmodule \"vpc\" {\n  source = \"terraform-aws-modules/vpc/aws\"\n  name = \"sentinel-vpc\"\n  cidr = \"10.0.0.0/16\"\n  azs = [\"ap-south-1a\", \"ap-south-1b\"]\n  private_subnets = [\"10.0.1.0/24\", \"10.0.2.0/24\"]\n  public_subnets  = [\"10.0.101.0/24\", \"10.0.102.0/24\"]\n  enable_nat_gateway = true\n}\n\n# rds.tf\nresource \"aws_db_instance\" \"default\" {\n  allocated_storage    = 20\n  engine               = \"postgres\"\n  instance_class       = \"db.t3.medium\"\n  name                 = \"sentineldb\"\n  username             = var.db_username\n  password             = var.db_password\n  storage_encrypted    = true\n  kms_key_id           = var.kms_key_arn\n}"
+  }
+}

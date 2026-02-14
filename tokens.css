@@ -1,0 +1,42 @@
+:root {
+  /* Brand Colors */
+  --color-primary: #0B335C;
+  --color-accent: #0FA89A;
+  --color-warning: #FF9F1C;
+  --color-danger: #E64545;
+
+  /* Surfaces */
+  --color-surface: #F7F9FB;
+  --color-surface-2: #FFFFFF;
+  --color-surface-3: #E6EEF4;
+
+  /* Text & Borders */
+  --gray-900: #0F1724;
+  --gray-700: #334155;
+  --gray-500: #64748B;
+  --gray-400: #94A3B8;
+  --gray-200: #E6EEF4;
+  --gray-100: #F1F5F9;
+
+  /* Spacing */
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+
+  /* Radius */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+
+  /* Shadows */
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+/* Dark Mode Overrides (Optional/Future) */
+@media (prefers-color-scheme: dark) {
+  /* Kept separate for specific dark mode implementation if needed, 
+     but current mandate specifies light professional theme */
+}

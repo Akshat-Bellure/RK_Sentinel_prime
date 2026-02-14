@@ -1,0 +1,36 @@
+{
+  "name": "RK Sentinel Prime Design System",
+  "version": "1.0.0",
+  "tokens": {
+    "colors": {
+      "primary": "#0B335C",
+      "accent": "#0FA89A",
+      "warning": "#FF9F1C",
+      "danger": "#E64545",
+      "surface": "#F7F9FB",
+      "surface_card": "#FFFFFF",
+      "text_main": "#0F1724",
+      "text_secondary": "#334155",
+      "text_muted": "#94A3B8"
+    },
+    "typography": {
+      "font_family_main": "Inter",
+      "font_family_header": "Rajdhani",
+      "font_family_logo": "Times New Roman"
+    },
+    "spacing": {
+      "xs": 4,
+      "sm": 8,
+      "md": 16,
+      "lg": 24,
+      "xl": 32
+    }
+  },
+  "components": [
+    { "name": "Button", "variants": ["Primary", "Secondary", "Accent", "Danger"] },
+    { "name": "Input", "states": ["Default", "Focus", "Error", "Disabled"] },
+    { "name": "Card", "description": "White surface with 1px gray-200 border" },
+    { "name": "MapPin", "variants": ["Verified (Teal)", "Unverified (Amber)", "Critical (Red)"] },
+    { "name": "LegalGateModal", "description": "Modal with signature input and 2FA field" }
+  ]
+}
