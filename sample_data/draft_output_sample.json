@@ -1,0 +1,14 @@
+{
+  "draft_text": "Regarding '4.2 Hosting Requirements...', we humbly request the Authority to clarify if this aligns with MEITY_GUIDELINES. [MEITY_GUIDELINES|b2c3d4e5...|4|a1b2c3d4] Amending this would encourage broader participation from domestic bidders.",
+  "tone": "officer-friendly",
+  "citations": [
+    {
+      "source_id": "MEITY_GUIDELINES",
+      "sha256": "b2c3d4e5...",
+      "page": 4,
+      "line_snippet": "All government data must reside in empanelled cloud data centers located within India."
+    }
+  ],
+  "requires_legal_review": false,
+  "generated_at": "2023-10-27T16:00:00Z"
+}

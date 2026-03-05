@@ -1,0 +1,35 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "sentinel-prime.fullname" . }}-backend
+  labels:
+    {{- include "sentinel-prime.labels" . | nindent 4 }}
+    app.kubernetes.io/component: backend
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+    - port: {{ .Values.service.port }}
+      targetPort: 8080
+      protocol: TCP
+      name: http
+  selector:
+    {{- include "sentinel-prime.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/component: backend
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "sentinel-prime.fullname" . }}-ai
+  labels:
+    {{- include "sentinel-prime.labels" . | nindent 4 }}
+    app.kubernetes.io/component: ai-core
+spec:
+  type: ClusterIP
+  ports:
+    - port: 8000
+      targetPort: 8000
+      protocol: TCP
+      name: http
+  selector:
+    {{- include "sentinel-prime.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/component: ai-core

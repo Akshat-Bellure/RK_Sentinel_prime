@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "sentinel-prime.fullname" . }}-backend
+  labels:
+    {{- include "sentinel-prime.labels" . | nindent 4 }}
+    app.kubernetes.io/component: backend
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "sentinel-prime.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: backend
+  template:
+    metadata:
+      labels:
+        {{- include "sentinel-prime.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: backend
+    spec:
+      containers:
+        - name: backend
+          image: "{{ .Values.image.backend.repository }}:{{ .Values.image.backend.tag }}"
+          imagePullPolicy: {{ .Values.image.backend.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: 8080
+              protocol: TCP
+          env:
+            - name: AWS_REGION
+              value: {{ .Values.env.region }}
+          resources:
+            {{- toYaml .Values.resources.backend | nindent 12 }}

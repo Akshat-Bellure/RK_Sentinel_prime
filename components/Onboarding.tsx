@@ -18,32 +18,52 @@ const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
     categories: [] as string[],
     dataLoc: 'india',
     certs: [] as string[],
-    warranty: 1,
+    hostingProof: null as File | null,
+    bomFile: null as File | null,
+    preferredStates: [] as string[],
     consent: false
   });
 
   const categories = ['IT Hardware', 'Software Services', 'Surveillance', 'Civil Works', 'Medical Equip'];
-  const certsList = ['STQC', 'ISO-27001', 'CMMI-5', 'BIS'];
+  const certsList = ['STQC', 'ISO-27001', 'CMMI-5', 'BIS', 'MeitY Empanelment'];
+  const statesList = ['All India', 'Maharashtra', 'Delhi', 'Karnataka', 'Tamil Nadu', 'Uttar Pradesh'];
 
   const handleNext = () => {
     if (step < 3) setStep(step + 1);
     else onComplete();
   };
 
-  // ID Logic: SB-{3CON}-{4DIG}
+  // Simulation of Backend ID Generation: SB-{3consonants}-{4digits}
   const generateVendorId = () => {
-      const consonants = formData.companyName.replace(/[aeiouAEIOU\s\W]/g, '').toUpperCase().slice(0,3).padEnd(3, 'X');
+      const name = formData.companyName || "UNKNOWN";
+      const consonants = name.replace(/[aeiouAEIOU\s\W0-9]/g, '').toUpperCase();
+      const prefix = (consonants.length >= 3 ? consonants.slice(0, 3) : (consonants + "XXX").slice(0, 3));
       const digits = Math.floor(1000 + Math.random() * 9000);
-      return `SB-${consonants}-${digits}`;
+      return `SB-${prefix}-${digits}`;
   };
 
-  // Password Logic: Adjective + 2 Digits + Syllable + Symbol
-  const generatedPass = "Solar99Xen#"; // Placeholder for demo, real generation happens server-side
-  const generatedId = generateVendorId();
+  // Simulation of Backend Password: [Adj][2digits][Syl][Sym]
+  const generatePass = () => {
+      const adj = ["Solar", "Lunar", "Cyber", "Rapid", "Secure"][Math.floor(Math.random()*5)];
+      const num = Math.floor(Math.random() * 90) + 10;
+      const syl = ["Xen", "Tek", "Nov", "Sys", "Net"][Math.floor(Math.random()*5)];
+      const sym = ["#", "@", "$", "!", "%"][Math.floor(Math.random()*5)];
+      return `${adj}${num}${syl}${sym}`;
+  };
+
+  const [generatedId, setGeneratedId] = useState('');
+  const [generatedPass, setGeneratedPass] = useState('');
+
+  React.useEffect(() => {
+      if (step === 3 && !generatedId) {
+          setGeneratedId(generateVendorId());
+          setGeneratedPass(generatePass());
+      }
+  }, [step]);
 
   return (
     <div className="h-full flex items-center justify-center p-6 bg-slate-900/50">
-      <div className="w-full max-w-3xl bg-slate-900 border border-slate-700 rounded-xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+      <div className="w-full max-w-4xl bg-slate-900 border border-slate-700 rounded-xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
         {/* Header */}
         <div className="bg-slate-800 p-6 border-b border-slate-700 flex justify-between items-center shrink-0">
           <div>
@@ -73,16 +93,6 @@ const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
                   />
                 </div>
                 <div className="space-y-1">
-                  <label className="text-xs text-slate-400 uppercase font-bold">Shortcode (3-5 CHARS) <span className="text-red-400">*</span></label>
-                  <input 
-                    type="text" 
-                    maxLength={5}
-                    className="w-full bg-slate-950 border border-slate-700 rounded p-2 text-white focus:border-cyan-500 outline-none uppercase"
-                    value={formData.shortcode}
-                    onChange={e => setFormData({...formData, shortcode: e.target.value.toUpperCase()})}
-                  />
-                </div>
-                <div className="space-y-1">
                   <label className="text-xs text-slate-400 uppercase font-bold">GSTIN <span className="text-red-400">*</span></label>
                   <input 
                     type="text" 
@@ -99,6 +109,27 @@ const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
                     value={formData.pan}
                     onChange={e => setFormData({...formData, pan: e.target.value})}
                   />
+                </div>
+                 <div className="space-y-1">
+                  <label className="text-xs text-slate-400 uppercase font-bold">Preferred States</label>
+                  <select 
+                    className="w-full bg-slate-950 border border-slate-700 rounded p-2 text-white focus:border-cyan-500 outline-none"
+                    onChange={e => {
+                        if (e.target.value && !formData.preferredStates.includes(e.target.value)) {
+                            setFormData({...formData, preferredStates: [...formData.preferredStates, e.target.value]});
+                        }
+                    }}
+                  >
+                     <option value="">Select State</option>
+                     {statesList.map(s => <option key={s} value={s}>{s}</option>)}
+                  </select>
+                  <div className="flex flex-wrap gap-1 mt-2">
+                     {formData.preferredStates.map(s => (
+                         <span key={s} className="text-[10px] bg-slate-800 px-2 py-0.5 rounded border border-slate-600 flex items-center gap-1">
+                             {s} <button onClick={() => setFormData({...formData, preferredStates: formData.preferredStates.filter(st => st !== s)})} className="hover:text-red-400">×</button>
+                         </span>
+                     ))}
+                  </div>
                 </div>
               </div>
 
@@ -137,7 +168,7 @@ const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
 
           {step === 2 && (
             <div className="space-y-6 fade-in">
-              <h3 className="text-lg font-semibold text-white">Compliance & Categories</h3>
+              <h3 className="text-lg font-semibold text-white">Compliance & Uploads</h3>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
@@ -165,7 +196,7 @@ const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
                 </div>
 
                 <div className="space-y-2">
-                    <label className="text-xs text-slate-400 uppercase font-bold">Certifications</label>
+                    <label className="text-xs text-slate-400 uppercase font-bold">Certifications (Select Multiple)</label>
                     <div className="flex flex-wrap gap-2">
                     {certsList.map(cert => (
                         <button 
@@ -186,30 +217,52 @@ const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
                         </button>
                     ))}
                     </div>
+                    <label className="block mt-2 cursor-pointer bg-slate-900 border border-dashed border-slate-600 p-2 text-center rounded text-xs text-slate-500 hover:bg-slate-800 hover:text-white transition-colors">
+                        Upload Certificate Files (PDF)
+                        <input type="file" multiple className="hidden" />
+                    </label>
                 </div>
               </div>
 
               <div className="p-4 bg-slate-800 rounded border border-slate-700">
-                <label className="flex items-center gap-3 cursor-pointer">
+                <label className="flex items-center gap-3 cursor-pointer mb-3">
                    <div className={`w-5 h-5 rounded border flex items-center justify-center transition-colors ${formData.dataLoc === 'india' ? 'bg-green-500 border-green-500' : 'border-slate-500'}`}>
                       {formData.dataLoc === 'india' && <span className="material-symbols-outlined text-white text-xs">check</span>}
                    </div>
                    <div>
                       <p className="text-sm text-white font-medium">Data Hosting in India (ap-south-1)</p>
-                      <p className="text-xs text-slate-400">I certify that all critical data will be stored within Indian territorial jurisdiction. Proof of hosting will be uploaded.</p>
+                      <p className="text-xs text-slate-400">I certify that all critical data will be stored within Indian territorial jurisdiction.</p>
                    </div>
                 </label>
+                
+                {formData.dataLoc === 'india' && (
+                    <div className="ml-8">
+                        <label className="block text-xs text-slate-500 uppercase font-bold mb-1">Upload Hosting Proof (Cloud Agreement/Invoice)</label>
+                        <input 
+                            type="file" 
+                            className="text-xs text-slate-400 file:mr-4 file:py-1 file:px-2 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-slate-700 file:text-white hover:file:bg-slate-600"
+                            onChange={e => setFormData({...formData, hostingProof: e.target.files ? e.target.files[0] : null})}
+                        />
+                    </div>
+                )}
               </div>
 
               <div className="p-4 bg-slate-800 rounded border border-slate-700">
                  <div className="flex justify-between items-center">
-                    <label className="text-xs text-slate-400 uppercase font-bold">Upload BOM Template (CSV)</label>
-                    <button className="text-xs text-cyan-500 hover:text-cyan-400 flex items-center gap-1">
-                        <span className="material-symbols-outlined text-xs">download</span> Download Format
-                    </button>
+                    <label className="text-xs text-slate-400 uppercase font-bold">BOM Template (Class-I Check)</label>
+                    <a href="/sample_data/bom_template.csv" download className="text-xs text-cyan-500 hover:text-cyan-400 flex items-center gap-1">
+                        <span className="material-symbols-outlined text-xs">download</span> Download CSV Template
+                    </a>
                  </div>
-                 <div className="mt-2 h-20 border-2 border-dashed border-slate-600 rounded flex items-center justify-center text-slate-500 text-xs hover:border-slate-500 cursor-pointer transition-colors">
-                     Drag & Drop or Click to Upload
+                 <div className="mt-2 h-24 border-2 border-dashed border-slate-600 rounded flex flex-col items-center justify-center text-slate-500 text-xs hover:border-slate-500 cursor-pointer transition-colors relative">
+                     <span className="material-symbols-outlined text-2xl mb-1">upload_file</span>
+                     {formData.bomFile ? formData.bomFile.name : "Drag & Drop BOM CSV or Click to Upload"}
+                     <input 
+                        type="file" 
+                        accept=".csv"
+                        className="absolute inset-0 opacity-0 cursor-pointer"
+                        onChange={e => setFormData({...formData, bomFile: e.target.files ? e.target.files[0] : null})}
+                     />
                  </div>
               </div>
 
@@ -220,7 +273,9 @@ const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
                   onChange={e => setFormData({...formData, consent: e.target.checked})}
                   className="accent-cyan-500 w-4 h-4"
                 />
-                <span className="text-xs text-slate-400">I agree to the Sentinel Bharat Terms of Service and Anti-Collusion Policy. I understand that false declarations will lead to blacklisting.</span>
+                <span className="text-xs text-slate-400">
+                    I agree to the <span className="text-cyan-500">DPDP Act 2023 Compliance</span> terms and Sentinel Bharat Anti-Collusion Policy. I understand that false declarations will lead to blacklisting.
+                </span>
               </label>
             </div>
           )}
@@ -245,6 +300,7 @@ const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
                 <div className="border-t border-slate-800 pt-4">
                   <label className="text-[10px] text-slate-500 uppercase tracking-widest font-bold">Initial Password</label>
                   <p className="text-2xl font-mono text-white font-bold tracking-wider">{generatedPass}</p>
+                  <div className="text-[10px] text-slate-500 mt-1">Entropy: ~60 bits</div>
                 </div>
                 
                 <button 
@@ -256,8 +312,13 @@ const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
                 </button>
               </div>
               
-              <div className="text-xs text-slate-500 max-w-xs mx-auto">
-                A verification link has been sent to <span className="text-slate-300">{formData.authEmail}</span>. You must set a permanent password within 24 hours.
+              <div className="text-xs text-slate-500 max-w-xs mx-auto space-y-2">
+                <p>A verification link has been sent to <span className="text-slate-300">{formData.authEmail}</span>.</p>
+                {formData.authMobile && (
+                    <p className="text-cyan-500 flex items-center justify-center gap-1">
+                        <span className="material-symbols-outlined text-xs">sms</span> OTP sent to {formData.authMobile}
+                    </p>
+                )}
               </div>
             </div>
           )}
@@ -276,7 +337,7 @@ const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
              disabled={step === 2 && !formData.consent}
              className={`bg-cyan-600 hover:bg-cyan-500 text-white px-8 py-2.5 rounded font-bold text-sm transition-all shadow-lg shadow-cyan-900/20 ${step === 2 && !formData.consent ? 'opacity-50 cursor-not-allowed' : ''}`}
            >
-             {step === 3 ? 'Acknowledge & Enter' : 'Next Step'}
+             {step === 3 ? 'Acknowledge & Login' : 'Next Step'}
            </button>
         </div>
       </div>

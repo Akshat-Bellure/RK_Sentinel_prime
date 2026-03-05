@@ -11,10 +11,12 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView, onViewChange }) => {
 
   const navItems = [
     { id: View.DASHBOARD, label: 'Mission Control', icon: 'dashboard' },
+    { id: View.INGEST, label: 'Ingest Station', icon: 'input' }, // Added
     { id: View.ANALYZER, label: 'RFP Analyzer', icon: 'analytics' },
     { id: View.PREBID, label: 'Pre-Bid Studio', icon: 'gavel' },
     { id: View.CALCULATOR, label: 'L1 Calculator', icon: 'calculate' },
     { id: View.VAULT, label: 'Evidence Vault', icon: 'folder_managed' },
+    { id: View.LEGAL_QUEUE, label: 'Legal Queue', icon: 'policy', highlight: true },
   ];
 
   return (
@@ -57,10 +59,12 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView, onViewChange }) => {
               className={`w-full flex items-center gap-3 px-3 py-3 rounded transition-all ${
                 isActive
                   ? 'bg-slate-800 text-teal-400 border-l-4 border-teal-500'
-                  : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800 border-l-4 border-transparent'
+                  : item.highlight 
+                    ? 'text-yellow-500 hover:text-yellow-300 hover:bg-slate-800 border-l-4 border-transparent' 
+                    : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800 border-l-4 border-transparent'
               } ${isCollapsed ? 'justify-center' : ''}`}
             >
-              <span className={`material-symbols-outlined text-xl ${isActive ? 'text-teal-400' : 'text-slate-500'}`}>{item.icon}</span>
+              <span className={`material-symbols-outlined text-xl ${isActive ? 'text-teal-400' : item.highlight ? 'text-yellow-500' : 'text-slate-500'}`}>{item.icon}</span>
               {!isCollapsed && <span className="font-medium whitespace-nowrap text-sm">{item.label}</span>}
             </button>
           );

@@ -1,0 +1,40 @@
+version: '3.8'
+
+services:
+  # Vector Database (Chroma)
+  # Deployed in ap-south-1 context
+  chromadb:
+    image: chromadb/chroma:0.4.22
+    container_name: sentinel-chroma
+    ports:
+      - "8000:8000"
+    volumes:
+      - chroma_data:/chroma/chroma
+    environment:
+      - IS_PERSISTENT=TRUE
+      - ALLOW_RESET=TRUE
+    networks:
+      - sentinel-net
+
+  # Embedding Worker / Tooling
+  embeddings-worker:
+    build: 
+      context: ../ai/embeddings
+      dockerfile: Dockerfile
+    container_name: sentinel-embeddings
+    depends_on:
+      - chromadb
+    volumes:
+      - ../sample_data:/app/sample_data
+    environment:
+      - AWS_REGION=ap-south-1
+    command: ["--input", "sample_data/tender_index_sample.json", "--host", "chromadb"]
+    networks:
+      - sentinel-net
+
+volumes:
+  chroma_data:
+
+networks:
+  sentinel-net:
+    driver: bridge

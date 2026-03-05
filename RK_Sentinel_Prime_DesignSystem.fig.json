@@ -1,36 +1,81 @@
 {
   "name": "RK Sentinel Prime Design System",
-  "version": "1.0.0",
+  "version": "1.1.0",
+  "description": "Design tokens for the procurement intelligence platform.",
   "tokens": {
     "colors": {
-      "primary": "#0B335C",
-      "accent": "#0FA89A",
-      "warning": "#FF9F1C",
-      "danger": "#E64545",
-      "surface": "#F7F9FB",
-      "surface_card": "#FFFFFF",
-      "text_main": "#0F1724",
-      "text_secondary": "#334155",
-      "text_muted": "#94A3B8"
+      "primary": {
+        "navy_900": "#0B2545",
+        "navy_800": "#133E6E",
+        "description": "Main brand background and header color."
+      },
+      "accent": {
+        "teal_400": "#0FB7B3",
+        "teal_500": "#0D9488",
+        "description": "Action buttons, active states, and highlights."
+      },
+      "status": {
+        "warning_orange": "#F6A623",
+        "danger_red": "#EF4444",
+        "success_green": "#22C55E",
+        "description": "Alerts, risk levels, and confirmation badges."
+      },
+      "neutral": {
+        "slate_900": "#0f172a",
+        "slate_800": "#1e293b",
+        "gov_grey": "#64748B",
+        "description": "Background surfaces, borders, and secondary text."
+      }
     },
     "typography": {
-      "font_family_main": "Inter",
-      "font_family_header": "Rajdhani",
-      "font_family_logo": "Times New Roman"
+      "font_family_main": "Inter, sans-serif",
+      "font_family_header": "Rajdhani, sans-serif",
+      "font_family_mono": "JetBrains Mono, monospace",
+      "scale": {
+        "xs": "10px",
+        "sm": "12px",
+        "md": "14px",
+        "lg": "18px",
+        "xl": "24px",
+        "2xl": "30px"
+      }
     },
-    "spacing": {
-      "xs": 4,
-      "sm": 8,
-      "md": 16,
-      "lg": 24,
-      "xl": 32
+    "components": {
+      "glass_panel": {
+        "background": "#1e293b",
+        "border": "1px solid #334155",
+        "shadow": "0 4px 6px -1px rgba(0, 0, 0, 0.1)"
+      },
+      "map_markers": {
+        "verified": "Solid Teal Circle with White Border",
+        "unverified": "Dashed Yellow Circle with Slate Fill",
+        "critical": "Pulsing Red Circle"
+      },
+      "pwin_gauge": {
+        "type": "SVG Arc",
+        "confidence_band": "Opacity 30%",
+        "animation": "Ease-out 1s"
+      }
     }
   },
-  "components": [
-    { "name": "Button", "variants": ["Primary", "Secondary", "Accent", "Danger"] },
-    { "name": "Input", "states": ["Default", "Focus", "Error", "Disabled"] },
-    { "name": "Card", "description": "White surface with 1px gray-200 border" },
-    { "name": "MapPin", "variants": ["Verified (Teal)", "Unverified (Amber)", "Critical (Red)"] },
-    { "name": "LegalGateModal", "description": "Modal with signature input and 2FA field" }
+  "accessibility_notes": [
+    "Ensure contrast ratio of at least 4.5:1 for all text against dark backgrounds.",
+    "Use semantic HTML5 tags (main, nav, article).",
+    "All interactive elements must have aria-labels.",
+    "Map markers must have tooltips accessible via keyboard navigation."
+  ],
+  "pages": [
+    {
+      "name": "Mission Control",
+      "features": ["Live Feed", "Stats Ticker", "Map Layer Toggle"]
+    },
+    {
+      "name": "RFP Analyzer",
+      "features": ["Split Pane View", "Clickable Citations", "Risk Highlighting"]
+    },
+    {
+      "name": "Pre-Bid Studio",
+      "features": ["Tone Selector", "Verification Badge"]
+    }
   ]
 }

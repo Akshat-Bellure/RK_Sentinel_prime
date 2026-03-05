@@ -1,0 +1,54 @@
+{
+  "project": "RK Sentinel Prime",
+  "version": "1.2.0-PILOT",
+  "deliverables": [
+    {
+      "category": "Source Code",
+      "files": [
+        "backend/main.go",
+        "backend/auth/service.go",
+        "backend/api/vault.go",
+        "ai/main.py",
+        "ai/verifier/engine.py",
+        "ai/strategist/agent.py",
+        "components/App.tsx",
+        "components/Dashboard.tsx",
+        "components/Vault.tsx",
+        "components/LegalQueue.tsx"
+      ]
+    },
+    {
+      "category": "Infrastructure (IaC)",
+      "files": [
+        "infra/terraform/main.tf",
+        "infra/terraform/variables.tf",
+        "infra/k8s/helm-chart/values.yaml"
+      ]
+    },
+    {
+      "category": "Documentation",
+      "files": [
+        "README.md",
+        "acceptance.md",
+        "docs/operator_runbook.md",
+        "docs/legal_sop.md"
+      ]
+    },
+    {
+      "category": "Sample Data",
+      "files": [
+        "sample_data/tender_sample_01.pdf",
+        "sample_data/gfr_2017.pdf",
+        "sample_data/dpdp_act_2023.pdf"
+      ]
+    }
+  ],
+  "placeholders_required": [
+    "AWS_ACCESS_KEY_ID",
+    "AWS_SECRET_ACCESS_KEY",
+    "JWT_SECRET",
+    "DB_PASSWORD",
+    "OPENAI_API_KEY_OR_LOCAL_MODEL_PATH"
+  ],
+  "verification_hash": "<SHA256_HASH_OF_REPO>"
+}

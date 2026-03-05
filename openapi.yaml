@@ -1,0 +1,106 @@
+openapi: 3.0.3
+info:
+  title: Sentinel Bharat API
+  version: 1.2.0
+servers:
+  - url: https://api.sentinel.gov.in/v1
+paths:
+  /auth/login:
+    post:
+      summary: User Login
+      description: Authenticates user via OAuth2 Password Grant flow. Enforces 2FA for specific roles.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username: { type: string }
+                password: { type: string, format: password }
+                totp_code: { type: string }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenPair'
+        '403':
+          description: Access Denied (Dev in Prod or Missing 2FA)
+
+  /auth/refresh:
+    post:
+      summary: Refresh Access Token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                refresh_token: { type: string }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  access_token: { type: string }
+
+  /auth/forgot-password:
+    post:
+      summary: Request Password Reset
+      description: Creates a PENDING_APPROVAL ticket. Does NOT send email immediately.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username: { type: string }
+      responses:
+        '200':
+          description: Ticket Created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message: { type: string }
+                  ticket_id: { type: string }
+                  status: { type: string, example: "PENDING_APPROVAL" }
+
+  /auth/admin/approve-reset:
+    post:
+      summary: Admin Approve Reset
+      security:
+        - bearerAuth: []
+      description: RBAC Admin only. Approves reset ticket to trigger email.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                ticket_id: { type: string }
+                decision: { type: string, enum: [APPROVED, REJECTED] }
+
+components:
+  schemas:
+    TokenPair:
+      type: object
+      properties:
+        access_token: { type: string }
+        refresh_token: { type: string }
+        expires_in: { type: integer }
+        token_type: { type: string }
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

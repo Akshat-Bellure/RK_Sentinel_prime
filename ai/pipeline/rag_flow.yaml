@@ -1,0 +1,54 @@
+name: Sentinel_RAG_Pipeline_v1
+description: Compliance analysis pipeline for government tenders.
+version: 1.0.0
+nodes:
+  - id: scanner
+    type: input
+    description: Ingests raw clause text and metadata.
+  
+  - id: extractor
+    type: processor
+    description: Identifies entities and cleans text.
+    inputs: [scanner]
+
+  - id: retriever
+    type: search
+    description: Vector search against Legal Knowledge Base (GFR, CVC, Acts).
+    inputs: [extractor]
+    config:
+      top_k: 3
+      threshold: 0.75
+
+  - id: strategist
+    type: llm_agent
+    description: Maps clause to category and formulates compliance strategy.
+    inputs: [retriever]
+    config:
+      model: llama-3-70b-instruct
+      prompt_template: ai/prompts/strategist_prompt.txt
+      temperature: 0.1
+
+  - id: verifier
+    type: guardrail
+    description: Double-blind check of citations against source documents.
+    inputs: [strategist]
+    rules:
+      - allow_only_verified_citations
+      - block_hallucinations
+
+  - id: formatter
+    type: output
+    description: Structures final JSON payload for frontend consumption.
+    inputs: [verifier]
+
+edges:
+  - from: scanner
+    to: extractor
+  - from: extractor
+    to: retriever
+  - from: retriever
+    to: strategist
+  - from: strategist
+    to: verifier
+  - from: verifier
+    to: formatter

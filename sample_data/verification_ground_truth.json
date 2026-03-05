@@ -1,0 +1,38 @@
+[
+  {
+    "id": "TC-001",
+    "source_id": "GFR_2017",
+    "snippet": "Any bidder from a country which shares a land border with India will be eligible to bid",
+    "expected_status": "PASS"
+  },
+  {
+    "id": "TC-002",
+    "source_id": "GFR_2017",
+    "snippet": "Any bidder from a country which shares a land border with India will be eligible to bid in any procurement whether of goods, services",
+    "expected_status": "PASS"
+  },
+  {
+    "id": "TC-003",
+    "source_id": "GFR_2017",
+    "snippet": "Foreign bidders are strictly prohibited from participating in any government tender without exception.",
+    "expected_status": "BLOCKED"
+  },
+  {
+    "id": "TC-004",
+    "source_id": "DPDP_ACT_2023",
+    "snippet": "The Central Government may, by notification, restrict the transfer of personal data by a Data Fiduciary",
+    "expected_status": "PASS"
+  },
+  {
+    "id": "TC-005",
+    "source_id": "DPDP_ACT_2023",
+    "snippet": "The Central Govt may restrict transfer of personal data by a Data Fiduciary",
+    "expected_status": "PASS"
+  },
+  {
+    "id": "TC-006",
+    "source_id": "MEITY_CLOUD_GUIDELINES",
+    "snippet": "Cloud Service Providers can host data in Singapore or Dubai if encrypted.",
+    "expected_status": "BLOCKED"
+  }
+]

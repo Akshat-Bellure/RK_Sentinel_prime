@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, User } from '../types';
+import { View, User, AnalyzerState } from '../types';
 import Sidebar from './Sidebar';
 import Dashboard from './Dashboard';
 import Analyzer from './Analyzer';
@@ -8,6 +8,8 @@ import Calculator from './Calculator';
 import Vault from './Vault';
 import Login from './Login';
 import Onboarding from './Onboarding';
+import IngestStation from './IngestStation';
+import LegalQueue from './LegalQueue';
 import VerificationModal from './VerificationModal';
 
 // Extend window interface for map popup navigation
@@ -22,6 +24,16 @@ export default function App() {
   const [currentView, setCurrentView] = useState<View>(View.DASHBOARD);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(false);
+  const [preBidContext, setPreBidContext] = useState<any>(null);
+
+  // Persist Analyzer Data here so it doesn't vanish on navigation
+  const [analyzerState, setAnalyzerState] = useState<AnalyzerState>({
+    file: null,
+    extractedSections: [],
+    riskScore: 0,
+    logs: [],
+    scanComplete: false
+  });
 
   // Expose navigation to window for Leaflet popups
   useEffect(() => {
@@ -57,14 +69,25 @@ export default function App() {
     switch (currentView) {
       case View.DASHBOARD:
         return <Dashboard onViewChange={setCurrentView} />;
+      case View.INGEST:
+        return <IngestStation />;
       case View.ANALYZER:
-        return <Analyzer onViewChange={setCurrentView} />;
+        return (
+          <Analyzer 
+            onViewChange={setCurrentView} 
+            onSetContext={setPreBidContext} 
+            analyzerState={analyzerState}
+            setAnalyzerState={setAnalyzerState}
+          />
+        );
       case View.PREBID:
-        return <PreBidStudio onViewChange={setCurrentView} onOpenModal={() => setIsModalOpen(true)} />;
+        return <PreBidStudio onViewChange={setCurrentView} onOpenModal={() => setIsModalOpen(true)} contextData={preBidContext} />;
       case View.CALCULATOR:
         return <Calculator />;
       case View.VAULT:
         return <Vault />;
+      case View.LEGAL_QUEUE:
+        return <LegalQueue />;
       case View.ONBOARDING:
         return <Onboarding onComplete={handleOnboardingComplete} />;
       default:

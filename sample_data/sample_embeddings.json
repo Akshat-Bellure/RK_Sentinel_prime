@@ -1,0 +1,13 @@
+{
+  "note": "This file represents the internal structure of data stored in ChromaDB. Actual data is binary.",
+  "collection": "sentinel_clauses",
+  "model": "all-MiniLM-L6-v2",
+  "records": [
+    {
+      "id": "GEM/2024/B/SAMPLE-01_CL-4.2",
+      "text": "4.2 Hosting Requirements\nAll data must be hosted within India...",
+      "vector_snippet": [0.0452, -0.0123, 0.0891, -0.0442, 0.0012],
+      "dimensions": 384
+    }
+  ]
+}

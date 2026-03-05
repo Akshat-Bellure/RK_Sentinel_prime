@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "sentinel-prime.fullname" . }}-ai
+  labels:
+    {{- include "sentinel-prime.labels" . | nindent 4 }}
+    app.kubernetes.io/component: ai-core
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      {{- include "sentinel-prime.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: ai-core
+  template:
+    metadata:
+      labels:
+        {{- include "sentinel-prime.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: ai-core
+    spec:
+      containers:
+        - name: ai-core
+          image: "{{ .Values.image.ai.repository }}:{{ .Values.image.ai.tag }}"
+          imagePullPolicy: {{ .Values.image.ai.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: 8000
+              protocol: TCP
+          env:
+            - name: AWS_REGION
+              value: {{ .Values.env.region }}
+          resources:
+            {{- toYaml .Values.resources.ai | nindent 12 }}

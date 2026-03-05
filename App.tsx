@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, User } from './types';
+import { View, User, AnalyzerState } from './types';
 import Sidebar from './components/Sidebar';
 import Dashboard from './components/Dashboard';
 import Analyzer from './components/Analyzer';
@@ -8,6 +8,8 @@ import Calculator from './components/Calculator';
 import Vault from './components/Vault';
 import Login from './components/Login';
 import Onboarding from './components/Onboarding';
+import LegalQueue from './components/LegalQueue';
+import IngestStation from './components/IngestStation';
 import VerificationModal from './components/VerificationModal';
 
 // Extend window interface for map popup navigation
@@ -22,6 +24,18 @@ export default function App() {
   const [currentView, setCurrentView] = useState<View>(View.DASHBOARD);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(false);
+  
+  // Persist Analyzer Data here so it doesn't vanish on navigation
+  const [analyzerState, setAnalyzerState] = useState<AnalyzerState>({
+    file: null,
+    extractedSections: [],
+    riskScore: 0,
+    logs: [],
+    scanComplete: false
+  });
+
+  // PreBid context (already existed, keeping it)
+  const [preBidContext, setPreBidContext] = useState<any>(null);
 
   // Expose navigation to window for Leaflet popups
   useEffect(() => {
@@ -48,7 +62,7 @@ export default function App() {
   };
 
   // SVG User Profile Base64
-  const userProfileSvg = `data:image/svg+xml;base64,IDxzdmcgd2lkdGg9IjEwMjQiIGhlaWdodD0iMTAyNCIgdmlld0JveD0iMCAwIDEwMCAxMDAiIHByZXNlcnZlQXNwZWN0UmF0aW89Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+IDxkZWZzPiA8bGluZWFyR3JhZGllbnQgaWQ9ImciIHgxPSItMTAwJSIgeTE9IjAiIHgyPSIwIiB5Mj0iMCI+IDxzdG9wIG9mZnNldD0iMCIgc3RvcC1jb2xvcj0iI2IwYjBiMCIvPiA8c3RvcCBvZmZzZXQ9Ii41IiBzdG9wLWNvbG9yPSIjZjBmMGYwIi8+IDxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iI2IwYjBiMCIvPiA8YW5pbWF0ZVRyYW5zZm9ybSBpZD0iYSIgYXR0cmlidXRlTmFtZT0iZ3JhZGllbnRUcmFuc2Zvcm0iIHR5cGU9InRyYW5zbGF0ZSIgZnJvbT0iMCIgdG89IjIiIGR1cj0iMXMiIGJlZ2luPSIwcyIvPiA8YW5pbWF0ZVRyYW5zZm9ybSBpZD0iYiIgYXR0cmlidXRlTmFtZT0iZ3JhZGllbnRUcmFuc2Zvcm0iIHR5cGU9InRyYW5zbGF0ZSIgZnJvbT0iMCIgdG89IjIiIGR1cj0iMS41cyIgYmVnaW49ImEuZW5kIi8+IDxhbmltYXRlVHJhbnNmb3JtIGF0dHJpYnV0ZU5hbWU9ImdyYWRpZW50VHJhbnNmb3JtIiB0eXBlPSJ0cmFuc2xhdGUiIGZyb209IjAiIHRvPSIyIiBkdXI9IjJzIiBiZWdpbj0iYi5lbmQiIHJlcGVhdENvdW50PSJpbmRlZmluaXRlIi8+IDwvbGluZWFyR3JhZGllbnQ+IDwvZGVmcz4gPHJlY3Qgd2lkdGg9IjEwMCIgaGVpZ2h0PSIxMDAiIGZpbGw9InVybCgjZykiLz4gPC9zdmc+`;
+  const userProfileSvg = `data:image/svg+xml;base64,IDxzdmcgd2lkdGg9IjEwMjQiIGhlaWdodD0iMTAyNCIgdmlld0JveD0iMCAwIDEwMCAxMDAiIHByZXNlcnZlQXNwZWN0UmF0aW89Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+IDxkZWZzPiA8bGluZWFyR3JhZGllbnQgaWQ9ImciIHgxPSItMTAwJSIgeTE9IjAiIHgyPSIwIiB5Mj0iMCI+IDxzdG9wIG9mZnNldD0iMCIgc3RvcC1jb2xvcj0iI2QwZDRkOCIvPiA8c3RvcCBvZmZzZXQ9Ii41IiBzdG9wLWNvbG9yPSIjZjhmYWZjIi8+IDxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iI2QwZDRkOCIvPiA8YW5pbWF0ZVRyYW5zZm9ybSBpZD0iYSIgYXR0cmlidXRlTmFtZT0iZ3JhZGllbnRUcmFuc2Zvcm0iIHR5cGU9InRyYW5zbGF0ZSIgZnJvbT0iMCIgdG89IjIiIGR1cj0iMXMiIGJlZ2luPSIwcyIvPiA8YW5pbWF0ZVRyYW5zZm9ybSBpZD0iYiIgYXR0cmlidXRlTmFtZT0iZ3JhZGllbnRUcmFuc2Zvcm0iIHR5cGU9InRyYW5zbGF0ZSIgZnJvbT0iMCIgdG89IjIiIGR1cj0iMS41cyIgYmVnaW49ImEuZW5kIi8+IDxhbmltYXRlVHJhbnNmb3JtIGF0dHJpYnV0ZU5hbWU9ImdyYWRpZW50VHJhbnNmb3JtIiB0eXBlPSJ0cmFuc2xhdGUiIGZyb209IjAiIHRvPSIyIiBkdXI9IjJzIiBiZWdpbj0iYi5lbmQiIHJlcGVhdENvdW50PSJpbmRlZmluaXRlIi8+IDwvbGluZWFyR3JhZGllbnQ+IDwvZGVmcz4gPHJlY3Qgd2lkdGg9IjEwMCIgaGVpZ2h0PSIxMDAiIGZpbGw9InVybCgjZykiLz4gPC9zdmc+`;
 
   const renderView = () => {
     if (showOnboarding) {
@@ -57,14 +71,26 @@ export default function App() {
     switch (currentView) {
       case View.DASHBOARD:
         return <Dashboard onViewChange={setCurrentView} />;
+      case View.INGEST:
+        return <IngestStation />;
       case View.ANALYZER:
-        return <Analyzer onViewChange={setCurrentView} />;
+        return (
+          <Analyzer 
+            onViewChange={setCurrentView} 
+            onSetContext={setPreBidContext}
+            // Pass the persisted state and setter
+            analyzerState={analyzerState}
+            setAnalyzerState={setAnalyzerState}
+          />
+        );
       case View.PREBID:
-        return <PreBidStudio onViewChange={setCurrentView} onOpenModal={() => setIsModalOpen(true)} />;
+        return <PreBidStudio onViewChange={setCurrentView} onOpenModal={() => setIsModalOpen(true)} contextData={preBidContext} />;
       case View.CALCULATOR:
         return <Calculator />;
       case View.VAULT:
         return <Vault />;
+      case View.LEGAL_QUEUE:
+        return <LegalQueue />;
       case View.ONBOARDING:
         return <Onboarding onComplete={handleOnboardingComplete} />;
       default:
@@ -87,8 +113,8 @@ export default function App() {
         {!showOnboarding && (
             <header className="h-16 border-b border-slate-800 flex items-center justify-between px-6 bg-slate-900/50 backdrop-blur-md sticky top-0 z-10 shrink-0">
             <div className="flex items-center gap-4">
-                <span className="px-2 py-1 bg-amber-500/10 text-amber-500 text-xs font-mono rounded border border-amber-500/20 animate-pulse flex items-center gap-2">
-                <span className="w-2 h-2 rounded-full bg-amber-500"></span>
+                <span className="px-2 py-1 bg-gov-warning/10 text-gov-warning text-xs font-mono rounded border border-gov-warning/20 animate-pulse flex items-center gap-2 font-bold">
+                <span className="w-2 h-2 rounded-full bg-gov-warning"></span>
                 LIVE FEED ACTIVE
                 </span>
                 <span className="text-slate-400 text-xs hidden sm:inline">
@@ -109,7 +135,7 @@ export default function App() {
                     <p className="text-white font-medium text-xs">{currentUser.name}</p>
                     <p className="text-[10px] text-cyan-500 font-mono">{currentUser.designation}</p>
                 </div>
-                <div className="w-9 h-9 rounded-full bg-slate-800 p-0.5 border border-slate-700">
+                <div className="w-9 h-9 rounded-full bg-slate-800 p-0.5 border border-slate-700 overflow-hidden">
                     <img alt="User" className="w-full h-full object-cover rounded-full" src={userProfileSvg} />
                 </div>
                 </div>

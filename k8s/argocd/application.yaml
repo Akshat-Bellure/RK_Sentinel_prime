@@ -1,0 +1,23 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: sentinel-prime-prod
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: 'https://github.com/gov-india/sentinel-bharat.git'
+    targetRevision: HEAD
+    path: k8s/helm-chart/sentinel-prime
+    helm:
+      valueFiles:
+        - values.yaml
+  destination:
+    server: 'https://kubernetes.default.svc'
+    namespace: sentinel-prod
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
